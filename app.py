@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, flash, url_for, redirect
 import logging
 from logging import FileHandler, Formatter
+from flask_wtf import Form
+from forms import *
 
 
 # App Config
