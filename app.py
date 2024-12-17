@@ -1,4 +1,6 @@
-from flask import Flask
+from flask import Flask, render_template, request, flash, url_for, redirect
+import logging
+from logging import FileHandler, Formatter
 
 
 # App Config
@@ -38,7 +40,7 @@ def venues():
                     "num_upcoming_shows": 0,
                     }]
                 }]
-            return render_templates('pages/venues.html', areas=data);
+    return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
