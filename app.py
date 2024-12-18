@@ -1,3 +1,6 @@
+import dateutil.parser
+import babel
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, flash, url_for, redirect
 import logging
 from logging import FileHandler, Formatter
@@ -8,6 +11,53 @@ from forms import *
 # App Config
 
 app = Flask(__name__)
+db = SQLAlchemy(app)
+
+# TODO: connect to a local postgresql database
+
+# Models
+
+class Venue(db.Model):
+    __tablename__ = 'venue'
+
+    id = db.column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    city = db.Column(db.String(120))
+    state = db.Column(db.String(120))
+    address = db .Column(db.String(120))
+    phone = db.Column(db.String(120))
+    image_link = db.Column(db.String(500))
+    facebook_lik = db.Column(db.String(120))
+
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
+class Artist(db.Model):
+    __tablename__ = 'Artist'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    city = db.Column(db.String(120))
+    state = db.Column(db.String(120))
+    phone = db.Column(db.String(120))
+    genres = db.Column(db.String(120))
+    image_link = db.Column(db.String(500))
+    facebook_link = db.Column(db.String(120))
+
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO Implement Dhow and rtist models, and complete all models, and complete all model relationships and properties, as a database migration.
+
+    # Filters
+
+    def format_datetime(value, format='medium'):
+        date = dateutil.parser.parse(value)
+        if format == 'full':
+            format="EEEE MMMM, d, y 'at' h:mma"
+        elif format == 'medium':
+            format="EE MM, dd, y h:mma"
+        return babel.dates.format_datetime(date, format, locale='en')
+
+    app.jinja_env.filters['datetime'] = format_datetime
+
 
 # Controllers
 
