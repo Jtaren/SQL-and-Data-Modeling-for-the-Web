@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, url_for, redirect
 from flask_moment import Moment
 import logging
 from logging import FileHandler, Formatter
-from flask_wtf import Form
+from flask_migrate import Migrate
 from forms import *
 import config
 
@@ -15,13 +15,14 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 # Models
 
 class Venue(db.Model):
-    __tablename__ = 'venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -39,14 +40,14 @@ class Venue(db.Model):
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.String(20))
     seeking_description = db.Column(db.String(500))
-    shows = db.relationship('Show', backref='venue', lazy='True')
+    shows = db.relationship('Show', backref='venue', lazy=True)
 
     # Filters
     def __repr__(self):
        return f'<Venue {self.id}, {self.name}>'
 
 class Artist(db.Model):
-    __tablename__ = 'artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -58,14 +59,14 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
-    upcoming_shows_count = db.Column(db.integer)
+    upcoming_shows_count = db.Column(db.Integer)
     past_shows_count = db.Column(db.Integer)
     website = db.Column(db.String(500))
     seeking_venue = db.Column(db.String(10))
-    seeking_description = db.Column(db.string(500))
+    seeking_description = db.Column(db.String(500))
 
     # TODO Implement show and artist models, and complete all models, and complete all model relationships and properties, as a database migration.
-    shows = db.relationship('show', backref='artist', lazy='True')
+    shows = db.relationship('Show', backref='artist', lazy=True)
     
     # Filters
     def __repr__(self):
@@ -77,7 +78,7 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
-    start_time = db.Column(db.Datetime, nullable=False, default=datetime.utcnow)
+    start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Filters
     def __repr__(self):
@@ -107,7 +108,7 @@ def venues():
     # TODO: replace with real venues data.
     data = []
     # Get all venues
-    venue = Venue.query.all()
+    venues = Venue.query.all()
 
     # Use set so there are no duplicate venues
     locations = set()
@@ -131,17 +132,17 @@ def venues():
        # Get current date to filter num_upcoming_shows
        current_date = datetime.now()
 
-    for show in shows:
-      if show.start_time > current_date:
-          num_upcoming_shows += 1
+       for show in shows:
+         if show.start_time > current_date:
+            num_upcoming_shows += 1
 
-    for venue_location in data:
-      if venue.state == venue_location['state'] and venue.city == venue_location['city']:
-            venue_location['venues'].append({
-              'id': venue.id,
-              'name': venue.name,
-              'num_upcoming_shows': num_upcoming_shows
-            })
+       for venue_location in data:
+         if venue.state == venue_location['state'] and venue.city == venue_location['city']:
+              venue_location['venues'].append({
+                'id': venue.id,
+                'name': venue.name,
+                'num_upcoming_shows': num_upcoming_shows
+              })
 
     return render_template('pages/venues.html', areas=data)
        
